@@ -2,7 +2,6 @@ import express from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
 
-// VERCEL SEKARANG HANYA BERFUNGSI SEBAGAI TOKEN GENERATOR
 const app = express();
 
 const CLIENT_ID = (process.env.CANVA_CLIENT_ID || '').trim();
@@ -26,7 +25,8 @@ app.get('/login', (req, res) => {
     const codeChallenge = generateCodeChallenge(codeVerifier);
     res.cookie('canva_code_verifier', codeVerifier, { maxAge: 10 * 60 * 1000, httpOnly: true, secure: true });
     
-    const scopes = 'folder:write design:permission:read design:content:write design:permission:write folder:read brandtemplate:content:write app:read design:content:read brandtemplate:meta:read comment:read folder:permission:write comment:write app:write brandtemplate:content:read profile:read asset:write design:meta:read folder:permission:read asset:read';
+    // Offline_access memastikan kita dapat refresh token
+    const scopes = 'offline_access folder:write design:permission:read design:content:write design:permission:write folder:read brandtemplate:content:write app:read design:content:read brandtemplate:meta:read comment:read folder:permission:write comment:write app:write brandtemplate:content:read profile:read asset:write design:meta:read folder:permission:read asset:read';
     const authUrl = `https://www.canva.com/api/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scopes)}&code_challenge=${codeChallenge}&code_challenge_method=s256`;
     res.redirect(authUrl);
 });
@@ -46,9 +46,9 @@ app.get('/callback', async (req, res) => {
 
         res.send(`
             <body style="background-color: #0d1117; color: #fff; font-family: monospace; padding: 20px;">
-                <h2 style="color: #3fb950;">TOKEN BERHASIL DIDAPATKAN!</h2>
-                <p>Copy teks di bawah ini dan masukkan ke Environment Variables Kiro AI (Secret).</p>
-                <textarea style="width: 100%; height: 150px; background: #161b22; color: #58a6ff; padding: 10px;" readonly>${tokenResponse.data.access_token}</textarea>
+                <h2 style="color: #3fb950;">SISTEM OTOMATISASI SIAP!</h2>
+                <p>Copy <b>REFRESH TOKEN</b> di bawah ini dan masukkan ke Kiro AI. Anda tidak perlu lagi copy Access Token setiap 4 jam.</p>
+                <textarea style="width: 100%; height: 100px; background: #161b22; color: #f0ad4e; padding: 10px; border: 1px solid #3fb950;" readonly>${tokenResponse.data.refresh_token}</textarea>
             </body>
         `);
     } catch (error: any) {
